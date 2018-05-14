@@ -1,0 +1,48 @@
+<!doctype>
+<html>
+    <head>
+        <script src="engine.js"></script>
+    </head>
+    <body>
+        <script>
+            engine.Init();
+            gl.clearColor( 0.0, 0.0, 1.0, 1.0 );
+            gl.clear( gl.COLOR_BUFFER_BIT );
+            
+            var vs = new engine.GLShader(
+                `
+                    precision lowp float;
+                    attribute vec3 position;
+                    varying vec3 color;
+                    void main(){
+                        color = position*0.5 + 0.5;
+                        gl_Position = vec4( position, 1.0 );
+                    }
+                `,
+                gl.VERTEX_SHADER
+            );
+            vs.Compile();
+            var fs = new engine.GLShader(
+                `
+                    precision lowp float;
+                    varying vec3 color;
+                    void main(){
+                        gl_FragColor = vec4( color, 1.0 );
+                    }
+                `,
+                gl.FRAGMENT_SHADER
+            );
+            fs.Compile();
+            var prog = new engine.GLProgram( vs, fs );
+            prog.Compile();
+
+            var mesh = new engine.Mesh({
+                "position" : { data:new Float32Array([ -1,-1,0,  0,1,0,  1,-1,0 ]) }
+            });
+            mesh.Init();
+
+            prog.Use();
+            mesh.Draw();
+        </script>
+    </body>
+</html>
