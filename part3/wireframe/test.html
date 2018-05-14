@@ -1,0 +1,70 @@
+<!doctype>
+<html>
+    <head>
+        <script src="engine.js"></script>
+    </head>
+    <body>
+        <script>
+			engine.Init();
+			
+			
+			var vs = new engine.GLShader(
+				`
+					precision lowp float;
+					attribute vec3 position;
+					uniform mat4 modelMatrix;
+					uniform mat4 viewMatrix;
+					uniform mat4 projMatrix;
+					varying vec3 color;
+					void main(){
+						color = position*0.5 + 0.5;
+						gl_Position = projMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );
+					}
+				`,
+				gl.VERTEX_SHADER
+			);
+			var fs = new engine.GLShader(
+				`
+					precision lowp float;
+					varying vec3 color;
+					void main(){
+						gl_FragColor = vec4( color, 1.0 );
+					}
+				`,
+				gl.FRAGMENT_SHADER
+			);
+			var prog = new engine.GLProgram( vs, fs );
+
+			var boxMesh = new engine.Mesh( engine.geometry.Box( 1,1,1, 4,4,4 ) );
+			boxMesh.drawWireframe = true;
+			boxMesh.Init();
+
+			var planeMesh = new engine.Mesh( engine.geometry.Plane( 1,1,4,4 ) );
+			planeMesh.Init();
+			var obj = new engine.Obj();
+			obj.mesh = planeMesh;
+			obj.program = prog;
+			obj.localScale.Set(0.5, 0.5, 0.5);
+			obj.onupdate = function(){
+				this.localPosition.x = Math.sin(engine.time)*0.1;
+				this.localPosition.z = Math.cos(engine.time)*0.1;
+				this.matrixNeedsUpdate = true;
+			};
+			engine.scene.Add(obj);
+
+			var obj2 = new engine.Obj();
+			obj2.mesh = boxMesh;
+			obj2.program = prog;
+			obj2.onupdate = function(){
+				this.localRotation.SetEuler( engine.time,engine.time,0 );
+				this.matrixNeedsUpdate = true;
+			};
+			obj2.SetParent( obj );
+			obj2.localPosition.x = 1;
+			obj2.matrixNeedsUpdate = true;
+			engine.scene.Add(obj2);
+
+			console.log(engine);
+        </script>
+    </body>
+</html>
